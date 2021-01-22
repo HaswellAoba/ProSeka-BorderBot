@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import json
 import tweepy
 import requests
@@ -10,13 +11,28 @@ from datetime import datetime
 #Variable Setting
 current_event_id='11' #지금 진행중인 이벤트 ID
 current_event_name = 'Colour of Myself !' #지금 진행중인 이벤트 이름
+event_start_date = '2021-01-21 16:00' #이벤트 시작하는 날짜
+event_end_date = '2021-01-29 21:00' #이벤트 끝나는 날짜
 
 today = datetime.today().strftime('%Y-%m-%d %H:%M')
 dataurl = 'https://bitbucket.org/sekai-world/sekai-event-track/raw/main/event{0}.json'.format(current_event_id)
 template_image = Image.open(os.path.join(sys.path[0], 'frame_{0}.png').format(current_event_id))
-font = ImageFont.truetype(os.path.join(sys.path[0], 'SeoulNamsanB.ttf'),24)
+font = ImageFont.truetype(os.path.join(sys.path[0], 'NotoSansCJKkr-Regular.otf'),24)
 message = '이벤트 "{0}" 순위 경계 정보입니다. (기준시간 {1})'.format(current_event_name, today)
 tokens = {'consumer_key': '', 'consumer_secret': '', 'access_token': '', 'access_token_secret': ''}
+
+#Event judge
+if (today < event_start_date):
+    print ("[경고] 아직 이벤트가 시작하지 않았습니다.")
+    exit()
+elif (today > event_start_date and today < event_end_date):
+    print ('이벤트 진행 중')
+elif (today == event_end_date):
+    print ('이벤트 종료!')
+    message = '이벤트 "{0}" 에 대한 마지막 경계 정보입니다.'.format(current_event_name)
+else:
+    print ('[경고] 만료된 이벤트에 대해 시도하고 있습니다.')
+    exit()
 
 #Read token from txt
 seq_no=0
@@ -34,12 +50,13 @@ api = tweepy.API(auth)
 draw = ImageDraw.Draw(template_image)
 name_dx = 92
 score_dx = 382
-dy = 305
+dy = 300
 
 #Get Current Ranking Data
 print("프로젝트 세카이 현재 이벤트 랭킹 파서")
 print()
 print('랭킹 데이터 요청')
+time.sleep(5)
 response = requests.get(dataurl)
 print('data.json 파일에 기록합니다...')
 open(os.path.join(sys.path[0], 'data.json'), 'wb').write(response.content)
@@ -63,10 +80,11 @@ print()
 print ("Top 3")
 seq_no=1
 for list in Top3Array:
-    print('{0}위: {1} - {2}pt'.format(seq_no, list.get('name'), list.get('score')))
+    score = format(list.get('score'), ',')
+    print('{0}위: {1} - {2}pt'.format(seq_no, list.get('name'), score))
     print('Template에 순위를 작성합니다')
     draw.text((name_dx,(dy-seq_no)),list.get('name'),fill="black",font=font,align='center')
-    draw.text((score_dx,(dy-seq_no)),str(list.get('score'))+"pt",fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-seq_no)),score+"pt",fill="black",font=font,align='center')
     seq_no+=1
     dy+=38
     if(seq_no==4):
@@ -76,23 +94,25 @@ print()
 #Rank 10~50
 print ("10~50위 포인트 리스트")
 rank_specify=20
-dy=445
+dy=439
 #Specificy for Rank 10
 for i in Top3Array:
     if i['rank'] == 10:
-        print('10위: {0} - {1}pt'.format(i['name'], i['score']))
+        score = format(i['score'], ',')
+        print('10위: {0} - {1}pt'.format(i['name'], score))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-1)),i['name'],fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-1)),str(i['score'])+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-1)),score+"pt",fill="black",font=font,align='center')
         dy+=34
 
 for i in range(1, 5):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), list.get('score')))
+        score = format(list.get('score'), ',')
+        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),str(list.get('score'))+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
     dy+=34
     rank_specify+=10
 print()
@@ -100,14 +120,15 @@ print()
 #Rank 100~500
 print("100~500위 포인트 리스트")
 rank_specify=100
-dy=640
+dy=634
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), list.get('score')))
+        score = format(list.get('score'), ',')
+        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),str(list.get('score'))+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
     dy+=34
     rank_specify+=100
 print()
@@ -115,29 +136,31 @@ print()
 #Rank 1000~5000
 print("1000~5000위 포인트 리스트")
 rank_specify=1000
-dy=834
+dy=826
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), list.get('score')))
+        score = format(list.get('score'), ',')
+        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),str(list.get('score'))+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
     dy+=34
     rank_specify+=1000
 print()
 
 #Rank 10000~50000
 print("10000~50000위 포인트 리스트")
-dy=1019
+dy=1012
 rank_specify=10000
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), list.get('score')))
+        score = format(list.get('score'), ',')
+        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),str(list.get('score'))+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
     dy+=34
     rank_specify+=10000
 print()
