@@ -65,12 +65,15 @@ open(os.path.join(sys.path[0], 'data.json'), 'wb').write(response.content)
 with open(os.path.join(sys.path[0], 'data.json'), 'r', encoding="UTF-8") as f:
     json_data = json.load(f)
 
+try:
+    with open(os.path.join(sys.path[0], 'data_old.json'), 'r', encoding="UTF-8") as f:
+        json_old = json.load(f)
+except FileNotFoundError:
+    print('구 데이터가 아직 없네요..')
+
 #Array
 Top3Array = json_data.get('first10')
-Top10Array = ''
-Top100Array = ''
-Top1000Array= ''
-Top10000Array= ''
+Old3Array = json_old.get('first10')
 
 #Prompt
 print('준비 완료')
@@ -80,11 +83,16 @@ print()
 print ("Top 3")
 seq_no=1
 for list in Top3Array:
-    score = format(list.get('score'), ',')
-    print('{0}위: {1} - {2}pt'.format(seq_no, list.get('name'), score))
+    score = list.get('score')
+    for i in Old3Array:
+        if i['rank'] == seq_no:
+            changed = score - i['score']
+            finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+    print('{0}위: {1}'.format(seq_no, finalstring))
     print('Template에 순위를 작성합니다')
     draw.text((name_dx,(dy-seq_no)),list.get('name'),fill="black",font=font,align='center')
-    draw.text((score_dx,(dy-seq_no)),score+"pt",fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-seq_no)),finalstring,fill="black",font=font,align='center')
     seq_no+=1
     dy+=38
     if(seq_no==4):
@@ -98,21 +106,32 @@ dy=439
 #Specificy for Rank 10
 for i in Top3Array:
     if i['rank'] == 10:
-        score = format(i['score'], ',')
-        print('10위: {0} - {1}pt'.format(i['name'], score))
+        score = i['score']
+        for i in Old3Array:
+            if i['rank'] == 10:
+                changed = score - i['score']
+                finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+        print('10위: {0}'.format(finalstring))
         print('Template에 순위를 작성합니다')
         draw.text((name_dx,(dy-1)),i['name'],fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-1)),score+"pt",fill="black",font=font,align='center')
+        draw.text((score_dx,(dy-1)),finalstring,fill="black",font=font,align='center')
         dy+=34
 
 for i in range(1, 5):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
+    TempOld = json_old.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        score = format(list.get('score'), ',')
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
+        score = list.get('score')
+        for j in TempOld:
+            if j['rank'] == rank_specify:
+                changed = score - j['score']
+                finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+    print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
+    print('Template에 순위를 작성합니다')
+    draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-i)),finalstring,fill="black",font=font,align='center')
     dy+=34
     rank_specify+=10
 print()
@@ -123,12 +142,18 @@ rank_specify=100
 dy=634
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
+    TempOld = json_old.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        score = format(list.get('score'), ',')
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
+        score = list.get('score')
+        for j in TempOld:
+            if j['rank'] == rank_specify:
+                changed = score - j['score']
+                finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+    print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
+    print('Template에 순위를 작성합니다')
+    draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-i)),finalstring,fill="black",font=font,align='center')
     dy+=34
     rank_specify+=100
 print()
@@ -139,12 +164,18 @@ rank_specify=1000
 dy=826
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
+    TempOld = json_old.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        score = format(list.get('score'), ',')
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
+        score = list.get('score')
+        for j in TempOld:
+            if j['rank'] == rank_specify:
+                changed = score - j['score']
+                finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+    print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
+    print('Template에 순위를 작성합니다')
+    draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-i)),finalstring,fill="black",font=font,align='center')
     dy+=34
     rank_specify+=1000
 print()
@@ -155,12 +186,18 @@ dy=1012
 rank_specify=10000
 for i in range(1, 6):
     TempArray = json_data.get('rank{0}'.format(rank_specify))
+    TempOld = json_old.get('rank{0}'.format(rank_specify))
     for list in TempArray:
-        score = format(list.get('score'), ',')
-        print('{0}위: {1} - {2}pt'.format(rank_specify, list.get('name'), score))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
-        draw.text((score_dx,(dy-i)),score+"pt",fill="black",font=font,align='center')
+        score = list.get('score') 
+        for j in TempOld:
+            if j['rank'] == rank_specify:
+                changed = score - j['score']
+                finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
+
+    print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
+    print('Template에 순위를 작성합니다')
+    draw.text((name_dx,(dy-i)),list.get('name'),fill="black",font=font,align='center')
+    draw.text((score_dx,(dy-i)),finalstring,fill="black",font=font,align='center')
     dy+=34
     rank_specify+=10000
 print()
@@ -170,9 +207,19 @@ template_image.save(os.path.join(sys.path[0], 'border.png'))
 
 #트윗
 print('트윗으로 작성합니다, 조금만 기다려 주십시오...')
+'''
 media_ids = []
 borderimg = api.media_upload(os.path.join(sys.path[0], 'border.png'))
 media_ids.append(borderimg.media_id)
 print(('미디어 업로드 OK : {0}').format(media_ids))
 api.update_status(status=message, media_ids=media_ids)
+'''
+
 print('Tweet OK')
+
+#기존 파일은 old로 저장
+try:
+    os.rename(os.path.join(sys.path[0], 'data.json'), os.path.join(sys.path[0], 'data_old.json'))
+except FileExistsError:
+    os.remove(os.path.join(sys.path[0], 'data_old.json'))
+    os.rename(os.path.join(sys.path[0], 'data.json'), os.path.join(sys.path[0], 'data_old.json'))
