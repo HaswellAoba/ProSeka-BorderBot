@@ -208,7 +208,7 @@ print()
 
 #DRAW TODAY
 texttoday = datetime.today().strftime('%Y년 %m월 %d일 %H시 %M분 기준')
-draw.text((993,1007), texttoday, fill="black", font=font, align='center')
+draw.text((1437,1007), texttoday, fill="black", font=font, align='center')
 
 #완성된 파일 저장
 template_image.save(os.path.join(sys.path[0], 'border.png'))
@@ -216,16 +216,12 @@ template_image.save(os.path.join(sys.path[0], 'border.png'))
 
 #트윗
 print('트윗으로 작성합니다, 조금만 기다려 주십시오...')
-
 media_ids = []
 borderimg = api.media_upload(os.path.join(sys.path[0], 'border.png'))
 media_ids.append(borderimg.media_id)
 print(('미디어 업로드 OK : {0}').format(media_ids))
 api.update_status(status=message, media_ids=media_ids)
-
-
 print('Tweet OK')
-
 
 #기존 파일은 old로 저장
 try:
