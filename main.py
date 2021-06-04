@@ -56,7 +56,7 @@ def main(status):
         main_functions.main(json_data, json_old)
 
     #Tweet
-    #tweet(message)
+    tweet(message)
 
     #Move current file to legacy
     try:
