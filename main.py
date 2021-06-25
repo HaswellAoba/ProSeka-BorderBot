@@ -9,16 +9,14 @@ import initial_functions
 import main_functions
 from datetime import datetime
 
-def old():
-    oldmessage = '[Error]'
-    tweet(oldmessage, 'old')
-    exit()
-
 def download_data(dataurl):
     time.sleep(5)
     response = requests.get(dataurl)
+    response.encoding = 'utf-8'
+    resp_data = response.content
     print('data.json 파일에 기록합니다...')
-    open(os.path.join(sys.path[0], 'resources/data.json'), 'wb').write(response.content)
+    j = json.loads(resp_data)
+    open(os.path.join(sys.path[0], 'resources/data.json'), 'w').write(json.dumps(j, sort_keys=True, indent=4, ensure_ascii=False))
 
 def tweet(message, image):
     print('트윗으로 작성합니다, 조금만 기다려 주십시오...')
@@ -38,7 +36,6 @@ def main(status):
     message = '이벤트 "{0}" 순위 경계 정보입니다. (기준시간 {1})'.format(config.current_event_name, today)
     if (status==1):
         message = '이벤트 "{0}" 에 대한 마지막 경계 정보입니다.'.format(config.current_event_name)
-    ms = int(round(time.time()*1000))
 
     print('\n랭킹 데이터 다운로드')
     download_data(dataurl)
@@ -46,17 +43,13 @@ def main(status):
     #Load Local JSON File
     with open(os.path.join(sys.path[0], 'resources/data.json'), 'r', encoding="UTF-8") as f:
         json_data = json.load(f)
-    
-    #Compare Time
-    current = json_data.get('time')
-    if (ms-current > 120000):
-        print('너무 오래된 데이터입니다.')
-        old()
-
+        json_data = json_data.get('data').get('eventRankings')
+ 
     #Trying with older data json
     try:
         with open(os.path.join(sys.path[0], 'resources/data_old.json'), 'r', encoding="UTF-8") as f:
             json_old = json.load(f)
+            json_old = json_old.get('data').get('eventRankings')
             is_initial = 0
     except FileNotFoundError:
         print('구 데이터가 아직 없습니다.')

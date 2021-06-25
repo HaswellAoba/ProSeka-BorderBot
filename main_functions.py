@@ -1,5 +1,6 @@
 import os
 import sys
+from typing_extensions import final
 import config
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
@@ -13,76 +14,37 @@ def draw_top_3(Top3Array, Old3Array, draw, name_dx, score_dx, dy, font, scrfont)
                 changed = score - i['score']
                 finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
 
-        print('{0}위: {1}'.format(seq_no, finalstring))
+        print('{0}위: {1} - {2}'.format(seq_no, list.get('userName'), finalstring))
         print('Template에 순위를 작성합니다')
-        draw.text((name_dx, dy), list.get('name'), fill="black", font=font, align='center')
+        draw.text((name_dx, dy), list.get('userName'), fill="black", font=font, align='center')
         draw.text((score_dx, dy), finalstring, fill="black", font=scrfont, align='center')
         seq_no += 1
         dy += 53
         if (seq_no == 4):
+            print()
             return
-    print()
-    return
-
-
-def draw_top_10(Top3Array, Old3Array, json_data, json_old, draw, name_dx, score_dx, dy, font, scrfont):
-    rank_specify = 20
-    # Specificy for Rank 10
-    for i in Top3Array:
-        if i['rank'] == 10:
-            score = i['score']
-            for i in Old3Array:
-                if i['rank'] == 10:
-                    changed = score - i['score']
-                    finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
-
-            print('10위: {0}'.format(finalstring))
-            print('Template에 순위를 작성합니다')
-            draw.text((name_dx, (dy - 1)), i['name'], fill="black", font=font, align='center')
-            draw.text((score_dx, (dy - 1)), finalstring, fill="black", font=scrfont, align='center')
-            dy += 49
-
-    for i in range(1, 5):
-        TempArray = json_data.get('rank{0}'.format(rank_specify))
-        TempOld = json_old.get('rank{0}'.format(rank_specify))
-        for list in TempArray:
-            score = list.get('score')
-            for j in TempOld:
-                if j['rank'] == rank_specify:
-                    changed = score - j['score']
-                    finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
-
-        print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx, dy), list.get('name'), fill="black", font=font, align='center')
-        draw.text((score_dx, dy), finalstring, fill="black", font=scrfont, align='center')
-        dy += 49
-        rank_specify += 10
-    print()
-    return
-
 
 def draw_general(json_data, json_old, rank, draw, name_dx, score_dx, dy, font, scrfont):
     rank_specify = rank
-    for i in range(1, 6):
-        TempArray = json_data.get('rank{0}'.format(rank_specify))
-        TempOld = json_old.get('rank{0}'.format(rank_specify))
-        for list in TempArray:
-            score = list.get('score')
-            for j in TempOld:
+    seq_no = 0
+    for i in json_data:
+        if i['rank'] >= rank_specify:
+            score = i.get('score')
+            for j in json_old:
                 if j['rank'] == rank_specify:
                     changed = score - j['score']
                     finalstring = format(score, ',') + 'pt' + ' (+' + format(changed, ',') + 'pt)'
 
-        print('{0}위: {1} - {2}'.format(rank_specify, list.get('name'), finalstring))
-        print('Template에 순위를 작성합니다')
-        draw.text((name_dx, dy), list.get('name'), fill="black", font=font, align='center')
-        draw.text((score_dx, dy), finalstring, fill="black", font=scrfont, align='center')
-        dy += 49
-        rank_specify += rank
-    print()
-    return
-
+            print('{0}위: {1} - {2}'.format(rank_specify, i.get('userName'), finalstring))
+            print('Template에 순위를 작성합니다')
+            draw.text((name_dx, dy), i.get('userName'), fill="black", font=font, align='center')
+            draw.text((score_dx, dy), finalstring, fill="black", font=scrfont, align='center')
+            dy += 49
+            rank_specify += rank
+            seq_no += 1
+            if (seq_no == 5):
+                print()
+                return
 
 def main(json_data, json_old):
     # Image Coordinate Setup
@@ -95,22 +57,22 @@ def main(json_data, json_old):
     font = ImageFont.truetype(os.path.join(sys.path[0], 'resources/NotoSansCJKkr-Regular.otf'), 30)
     scrfont = ImageFont.truetype(os.path.join(sys.path[0], 'resources/NotoSansCJKkr-Medium.otf'), 30)
     draw = ImageDraw.Draw(template_image)
-    Top3Array = json_data.get('first10')
-    Old3Array = json_old.get('first10')
     rank = 100
 
     # Top 3
     print("Top 3")
-    draw_top_3(Top3Array, Old3Array, draw, name_dx, score_dx, dy, font, scrfont)
+    draw_top_3(json_data, json_old, draw, name_dx, score_dx, dy, font, scrfont)
 
     # Rank 10~50
     print("10~50위 포인트 리스트")
     dy = 555
-    draw_top_10(Top3Array, Old3Array, json_data, json_old, draw, name_dx, score_dx, dy, font, scrfont)
+    rank = 10
+    draw_general(json_data, json_old, rank, draw, name_dx, score_dx, dy, font, scrfont)
 
     # Rank 100~500
     print("100~500위 포인트 리스트")
     dy = 821
+    rank = 100
     draw_general(json_data, json_old, rank, draw, name_dx, score_dx, dy, font, scrfont)
 
     # Rank 1000~5000
